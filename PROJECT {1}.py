@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import pandas as pd
 import re
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -14,17 +14,13 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel 
-from PyQt5.QtCore import QCoreApplication
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import r2_score
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
-
-
 
 
 
@@ -51,9 +47,15 @@ class Ui_MainWindow(object):
         self.radioButton_Regression.setObjectName("radioButton_Regression")
         self.horizontalLayout_5.addWidget(self.radioButton_Regression)
 
+
+        self.buttonGroup = QtWidgets.QButtonGroup(MainWindow)
+        self.buttonGroup.setObjectName("buttonGroup")
+        self.buttonGroup.addButton(self.radioButton_Regression)
+
         self.radioButton_Classification = QtWidgets.QRadioButton(self.horizontalLayoutWidget_3)
         self.radioButton_Classification.setObjectName("radioButton_Classification")
         self.horizontalLayout_5.addWidget(self.radioButton_Classification)
+        self.buttonGroup.addButton(self.radioButton_Classification)
 
         self.verticalLayoutWidget_3 = QtWidgets.QWidget(self.groupBox)
         self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(30, 80, 131, 171))
@@ -84,32 +86,43 @@ class Ui_MainWindow(object):
         self.radioButton_Supervised.setGeometry(QtCore.QRect(10, 20, 231, 20))
         self.radioButton_Supervised.setObjectName("radioButton_Supervised")
 
-    
-        self.checkBox_k_mean = QtWidgets.QCheckBox(self.groupBox)
-        self.checkBox_k_mean.setGeometry(QtCore.QRect(20, 300, 129, 20))
-        self.checkBox_k_mean.setObjectName("checkBox_k_mean")
+        
+        self.buttonGroup_2 = QtWidgets.QButtonGroup(MainWindow)
+        self.buttonGroup_2.setObjectName("buttonGroup_2")
+        self.buttonGroup_2.addButton(self.radioButton_Supervised)
 
         self.radioButton_Unsupervised = QtWidgets.QRadioButton(self.groupBox)
         self.radioButton_Unsupervised.setGeometry(QtCore.QRect(10, 270, 129, 20))
         self.radioButton_Unsupervised.setObjectName("radioButton_Unsupervised")
+        self.buttonGroup_2.addButton(self.radioButton_Unsupervised)
 
-    
+        self.checkBox_k_mean = QtWidgets.QCheckBox(self.groupBox)
+        self.checkBox_k_mean.setGeometry(QtCore.QRect(20, 300, 129, 20))
+        self.checkBox_k_mean.setObjectName("checkBox_k_mean")
+
      
         self.groupBox_2 = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBox_2.setGeometry(QtCore.QRect(30, 430, 341, 101))
         self.groupBox_2.setObjectName("groupBox_2")
 
+        
+        self.buttonGroup_3 = QtWidgets.QButtonGroup(MainWindow)
+        self.buttonGroup_3.setObjectName("buttonGroup_3")
+
         self.radioButton_Confusion_matrix = QtWidgets.QRadioButton(self.groupBox_2)
         self.radioButton_Confusion_matrix.setGeometry(QtCore.QRect(40, 40, 131, 20))
         self.radioButton_Confusion_matrix.setObjectName("radioButton_Confusion_matrix")
+        self.buttonGroup_3.addButton(self.radioButton_Confusion_matrix)
         
         self.radioButton_accuracy = QtWidgets.QRadioButton(self.groupBox_2)
         self.radioButton_accuracy.setGeometry(QtCore.QRect(200, 40, 95, 20))
         self.radioButton_accuracy.setObjectName("radioButton_accuracy")
+        self.buttonGroup_3.addButton(self.radioButton_accuracy)
         
         self.radioButton_KMeans_Clusters = QtWidgets.QRadioButton(self.groupBox_2)
         self.radioButton_KMeans_Clusters.setGeometry(QtCore.QRect(40, 70, 150, 20))  
         self.radioButton_KMeans_Clusters.setObjectName("radioButton_KMeans_Clusters")
+        self.buttonGroup_3.addButton(self.radioButton_KMeans_Clusters)
 
         self.Run = QtWidgets.QPushButton(self.centralwidget ,clicked = self.run_selected_dataset)
         self.Run.setGeometry(QtCore.QRect(490, 500, 81, 31))
@@ -181,7 +194,9 @@ class Ui_MainWindow(object):
         self.dataset_combo.setItemText(2, _translate("MainWindow", "Document clustering "))
         self.dataset_combo.setItemText(3, _translate("MainWindow", "Platform Price Prediction"))
 
+
     def run_selected_dataset(self):
+        self.error_label.setText('')
         self.valid_algorithm_selected = False
         selected_dataset = self.dataset_combo.currentText()
 
@@ -196,15 +211,14 @@ class Ui_MainWindow(object):
         elif selected_dataset == "Platform Price Prediction":
             self.if_Price_prediction_selected()
         else:
-            print("Please select a valid dataset")
+            self.error_label.setText("Please select a valid dataset")
 
         # Plot accuracy or confusion matrix if selected
         if self.valid_algorithm_selected == True:
             
             if self.radioButton_accuracy.isChecked():
                 self.plot_accuracy_comparison()
-            if self.radioButton_Confusion_matrix.isChecked():
-                
+            if self.radioButton_Confusion_matrix.isChecked():  
                 self.show_confusion_matrix()
         # k-means clusters can be plotted regardless
         if self.radioButton_KMeans_Clusters.isChecked():
@@ -226,17 +240,16 @@ class Ui_MainWindow(object):
                 X_test_TFIDF= TF.transform(X_test)
                 
                 if self.checkBox_KNN.isChecked():
-                    self.run_knn(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
+                    self.run_knn_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
                     self.valid_algorithm_selected = True
             
                 if self.checkBox_Naive_Bayes.isChecked():
-                    self.run_naive_bayes(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
+                    self.run_naive_bayes_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
                     self.valid_algorithm_selected = True
             
                 if self.checkBox_Decision_Tree.isChecked():
-                    self.run_decision_tree(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
+                    self.run_decision_tree_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
                     self.valid_algorithm_selected = True
-            
             
                 elif self.checkBox_k_mean.isChecked() or  self.checkBox_Linear_Regression.isChecked()  :
                     self.error_label.setText("This algorithm is not valid for this data.")  # Display error message
@@ -304,8 +317,6 @@ class Ui_MainWindow(object):
                 elif self.valid_algorithm_selected ==False:
                     self.error_label.setText("No algorithm selected.")  # Display error message
                 
-                
-                
             else:
                 
                 self.error_label.setText("Please select regression or classification ")
@@ -313,9 +324,6 @@ class Ui_MainWindow(object):
             self.error_label.setText("Please select Supervised or unSupervised ")
                 
         
-            
-           
-
     def if_Document_data_selected(self):
         
         if self.radioButton_Unsupervised.isChecked():
@@ -335,7 +343,6 @@ class Ui_MainWindow(object):
             self.tfidf = self.vectorizer.fit_transform(df['text'])
             
         
-
             # Check which algorithms are selected
             if self.checkBox_k_mean.isChecked(): 
                 self.run_k_mean()
@@ -423,15 +430,17 @@ class Ui_MainWindow(object):
         ax.legend()
         self.canvas.draw()
     ########################################## algorithhms #########################3
-    def run_knn(self, X_vect, y_train, y_test,X_test):
-        knn = KNeighborsClassifier(n_neighbors=5)
-        knn.fit(X_vect, y_train)
-        y_predknn = knn.predict(X_test)
-        knn_accuracy = accuracy_score(y_test, y_predknn)
-        self.accuracies['KNN'] = knn_accuracy
-        self.y_predknn = y_predknn
-        self.y_test = y_test
-        
+    
+    # KNN Regressor
+    def run_knn_regression(self,x_train, y_train, x_test, y_test):
+        model = KNeighborsRegressor(n_neighbors=3)
+        model.fit(x_train, y_train)
+        y_predknn = model.predict(x_test)
+        accuracy_knn= r2_score(y_test, y_predknn)
+        self.accuracies['KNN'] = accuracy_knn
+        self.y_predknn=y_predknn
+        self.y_test=y_test
+
     def linear_regression(self,x_train, y_train, x_test, y_test):
         model = LinearRegression()
         model.fit(x_train, y_train)
@@ -450,17 +459,17 @@ class Ui_MainWindow(object):
         self.y_predDt=y_predDt
         self.y_test=y_test
 
-    # KNN Regressor
-    def run_knn_regression(self,x_train, y_train, x_test, y_test):
-        model = KNeighborsRegressor(n_neighbors=3)
-        model.fit(x_train, y_train)
-        y_predknn = model.predict(x_test)
-        accuracy_knn= r2_score(y_test, y_predknn)
-        self.accuracies['KNN'] = accuracy_knn
-        self.y_predknn=y_predknn
-        self.y_test=y_test
+    
+    def run_knn_spam(self, X_vect, y_train, y_test,X_test):
+        knn = KNeighborsClassifier(n_neighbors=3,metric='euclidean',weights='distance')
+        knn.fit(X_vect, y_train)
+        y_predknn = knn.predict(X_test)
+        knn_accuracy = accuracy_score(y_test, y_predknn)
+        self.accuracies['KNN'] = knn_accuracy
+        self.y_predknn = y_predknn
+        self.y_test = y_test
 
-    def run_naive_bayes(self, X_vect, y_train, y_test,X_test):
+    def run_naive_bayes_spam(self, X_vect, y_train, y_test,X_test):
         nb = MultinomialNB()
         nb.fit(X_vect, y_train)
         y_prednb = nb.predict(X_test)
@@ -469,30 +478,35 @@ class Ui_MainWindow(object):
         self.y_prednb = y_prednb
         self.y_test = y_test
 
-    def run_decision_tree(self, X_vect, y_train, y_test,X_test):
-        dt = DecisionTreeClassifier(random_state=42)
+    def run_decision_tree_spam(self, X_vect, y_train, y_test,X_test):
+        dt = DecisionTreeClassifier(criterion= 'gini')
         dt.fit(X_vect, y_train)
         y_preddt = dt.predict(X_test)
         dt_accuracy = accuracy_score(y_test, y_preddt)
         self.accuracies['Decision Tree'] = dt_accuracy
         self.y_preddt = y_preddt
         self.y_test = y_test
+
+
     def run_k_mean(self):
-        num_clusters = 5  # Adjust this based on your data
+        num_clusters = 3  # Adjust this based on your data
         km = KMeans(n_clusters=num_clusters)
         km.fit(self.tfidf)
         
-
         # Plot clusters
         self.plot_KMeans_Clusters_Centroids(km)
+
     def restart_app(self):
         
+        self.buttonGroup.setExclusive(False)
+        self.buttonGroup_2.setExclusive(False)
+        self.buttonGroup_3.setExclusive(False)
+
     # Reset radio buttons
-        self.radioButton_Regression.setChecked(False)
-        self.radioButton_Classification.setChecked(False)  # Reset Classification button
         self.radioButton_Supervised.setChecked(False)
         self.radioButton_Unsupervised.setChecked(False)
-
+        self.radioButton_Regression.setChecked(False)
+        self.radioButton_Classification.setChecked(False)  # Reset Classification button
     # Reset checkboxes
         self.checkBox_Linear_Regression.setChecked(False)
         self.checkBox_KNN.setChecked(False)
@@ -514,6 +528,10 @@ class Ui_MainWindow(object):
     # Clear the canvas if any plot is displayed
         self.figure.clear()
         self.canvas.draw()
+        self.buttonGroup.setExclusive(True)
+        self.buttonGroup_2.setExclusive(True)
+        self.buttonGroup_3.setExclusive(True)
+
     
 
 def removeSpecialCharacters(text):
