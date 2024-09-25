@@ -82,7 +82,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.addWidget(self.checkBox_Naive_Bayes)
 
         self.radioButton_Supervised = QtWidgets.QRadioButton(self.groupBox)
-        self.radioButton_Supervised.setEnabled(True)
         self.radioButton_Supervised.setGeometry(QtCore.QRect(10, 20, 231, 20))
         self.radioButton_Supervised.setObjectName("radioButton_Supervised")
 
@@ -95,6 +94,9 @@ class Ui_MainWindow(object):
         self.radioButton_Unsupervised.setGeometry(QtCore.QRect(10, 270, 129, 20))
         self.radioButton_Unsupervised.setObjectName("radioButton_Unsupervised")
         self.buttonGroup_2.addButton(self.radioButton_Unsupervised)
+
+        self.radioButton_Supervised.toggled.connect(self.disable_unsupervised)
+        self.radioButton_Unsupervised.toggled.connect(self.disable_supervised)
 
         self.checkBox_k_mean = QtWidgets.QCheckBox(self.groupBox)
         self.checkBox_k_mean.setGeometry(QtCore.QRect(20, 300, 129, 20))
@@ -163,9 +165,8 @@ class Ui_MainWindow(object):
         
         # Error message label (corrected initialization)
         self.error_label = QLabel("", self.centralwidget) 
-        self.error_label.setGeometry(QtCore.QRect(30, 540, 341, 30)) 
+        self.error_label.setGeometry(QtCore.QRect(30, 540, 500, 30)) 
         self.error_label.setStyleSheet("color: red; font-size: 18px;")
-        self.error_label.setAlignment(QtCore.Qt.AlignCenter) 
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -218,18 +219,21 @@ class Ui_MainWindow(object):
             
             if self.radioButton_accuracy.isChecked():
                 self.plot_accuracy_comparison()
-            if self.radioButton_Confusion_matrix.isChecked():  
+            elif self.radioButton_Confusion_matrix.isChecked():  
                 self.show_confusion_matrix()
-        # k-means clusters can be plotted regardless
-        if self.radioButton_KMeans_Clusters.isChecked():
-            self.show_k_means_clusters()
+            elif self.radioButton_KMeans_Clusters.isChecked():
+                self.show_k_means_clusters()
+            else:
+                self.error_label.setText("Please select one of validition options")
             
   ############################# data #########################      
 
 
     def if_Email_Spam_selected(self):
         if self.radioButton_Supervised.isChecked():
-            if self.radioButton_Classification.isChecked():
+            if self.radioButton_Regression.isChecked():
+                self.error_label.setText("This dataset is not compatible with regression analysis.")
+            elif self.radioButton_Classification.isChecked():
                 df=pd.read_csv('spam_ham_dataset_cleaned.csv')
                 X=df['text_cleaned']
                 X=X.fillna('')
@@ -239,27 +243,28 @@ class Ui_MainWindow(object):
                 X_train_TFIDF= TF.fit_transform(X_train)
                 X_test_TFIDF= TF.transform(X_test)
                 
-                if self.checkBox_KNN.isChecked():
-                    self.run_knn_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
-                    self.valid_algorithm_selected = True
-            
-                if self.checkBox_Naive_Bayes.isChecked():
-                    self.run_naive_bayes_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
-                    self.valid_algorithm_selected = True
-            
-                if self.checkBox_Decision_Tree.isChecked():
-                    self.run_decision_tree_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
-                    self.valid_algorithm_selected = True
-            
-                elif self.checkBox_k_mean.isChecked() or  self.checkBox_Linear_Regression.isChecked()  :
-                    self.error_label.setText("This algorithm is not valid for this data.")  # Display error message
-        
-                elif self.valid_algorithm_selected == False:
+                if self.checkBox_Linear_Regression.isChecked():
+                    self.error_label.setText("Linear Regression algorithm is not valid for this data.")
+                else:
+                    if self.checkBox_KNN.isChecked():
+                        self.run_knn_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
+                        self.valid_algorithm_selected = True
                 
-                    self.error_label.setText("No algorithm selected.") # Display error message
+                    if self.checkBox_Naive_Bayes.isChecked():
+                        self.run_naive_bayes_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
+                        self.valid_algorithm_selected = True
+                
+                    if self.checkBox_Decision_Tree.isChecked():
+                        self.run_decision_tree_spam(X_train_TFIDF, y_train, y_test,X_test_TFIDF)
+                        self.valid_algorithm_selected = True
+                
+                    elif self.valid_algorithm_selected == False:
+                        self.error_label.setText("No algorithm selected.") 
         
             else:
                 self.error_label.setText("Please select Classification  or Regression ")
+        elif self.radioButton_Unsupervised.isChecked():
+            self.error_label.setText("This dataset is not compatible with Unsupervised algorithm.")
         else:
             self.error_label.setText("Please select Supervised or unSupervised ")
         
@@ -297,29 +302,34 @@ class Ui_MainWindow(object):
                 y = df['price']
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
             
-                if self.checkBox_KNN.isChecked():
-                    self.run_knn_regression(x_train, y_train, x_test, y_test)
-                    self.valid_algorithm_selected = True
                 
+                if self.checkBox_Naive_Bayes.isChecked():
+                    self.error_label.setText("Naive Bayes algorithm is not valid for this data.") 
+                else:
+                    if self.checkBox_KNN.isChecked():
+                        self.run_knn_regression(x_train, y_train, x_test, y_test)
+                        self.valid_algorithm_selected = True
+                    
+                    
+                    if self.checkBox_Linear_Regression.isChecked():
+                        self.linear_regression(x_train, y_train, x_test, y_test)
+                        self.valid_algorithm_selected = True
+                    
+                    
+                    if self.checkBox_Decision_Tree.isChecked():
+                        self.decision_tree(x_train, y_train, x_test, y_test)
+                        self.valid_algorithm_selected = True 
+                    
+                    elif self.valid_algorithm_selected ==False:
+                        self.error_label.setText("No algorithm selected.") 
                 
-                if self.checkBox_Linear_Regression.isChecked():
-                    self.linear_regression(x_train, y_train, x_test, y_test)
-                    self.valid_algorithm_selected = True
-                
-                
-                if self.checkBox_Decision_Tree.isChecked():
-                    self.decision_tree(x_train, y_train, x_test, y_test)
-                    self.valid_algorithm_selected = True
-                
-                elif self.checkBox_k_mean.isChecked() or self.checkBox_Naive_Bayes.isChecked() :
-                    self.error_label.setText("This algorithm is not valid for this data.")  # Display error message
-                
-                elif self.valid_algorithm_selected ==False:
-                    self.error_label.setText("No algorithm selected.")  # Display error message
-                
+            elif self.radioButton_Classification.isChecked():
+                self.error_label.setText("This dataset is not compatible with classification analysis.")  
             else:
-                
                 self.error_label.setText("Please select regression or classification ")
+        
+        elif self.radioButton_Unsupervised.isChecked():
+            self.error_label.setText("This dataset is not compatible with Unsupervised algorithm.")
         else:
             self.error_label.setText("Please select Supervised or unSupervised ")
                 
@@ -327,7 +337,6 @@ class Ui_MainWindow(object):
     def if_Document_data_selected(self):
         
         if self.radioButton_Unsupervised.isChecked():
-            
             df = pd.read_csv('file.txt.zip')
             #cleaing
             def get_label(text):
@@ -347,10 +356,13 @@ class Ui_MainWindow(object):
             if self.checkBox_k_mean.isChecked(): 
                 self.run_k_mean()
             elif self.checkBox_KNN.isChecked() or self.checkBox_Naive_Bayes.isChecked() or self.checkBox_Decision_Tree.isChecked() or self.checkBox_Linear_Regression.isChecked():
-                self.error_label.setText("This algorithm is not valid for this data.")  # Display error message
+                self.error_label.setText("This algorithm is not valid for this data.")  
             else:
-                self.error_label.setText("No algorithm selected.")  # Display error message
-            
+                self.error_label.setText("No algorithm selected.")  
+        
+        
+        elif self.radioButton_Supervised.isChecked():
+            self.error_label.setText("This dataset is not compatible with Supervised algorithm.")
         else: 
             self.error_label.setText("Please select  unSupervised")
         
@@ -381,9 +393,12 @@ class Ui_MainWindow(object):
     def show_confusion_matrix(self):
         # Clear the canvas before drawing the new plot
         self.canvas.figure.clear()
-
+        count=self.checkBox_KNN.isChecked()+self.checkBox_Naive_Bayes.isChecked()+self.checkBox_Decision_Tree.isChecked()
         # Choose the corresponding confusion matrix
-        if self.checkBox_KNN.isChecked():
+        if count>1:
+            self.error_label.setText("Select only one algorithm to generate the Confusion Matrix.")
+            return
+        elif self.checkBox_KNN.isChecked():
             cm = confusion_matrix(self.y_test, self.y_predknn)
             model_name = "KNN"
         elif self.checkBox_Naive_Bayes.isChecked():
@@ -489,7 +504,7 @@ class Ui_MainWindow(object):
 
 
     def run_k_mean(self):
-        num_clusters = 3  # Adjust this based on your data
+        num_clusters = 5  # Adjust this based on your data
         km = KMeans(n_clusters=num_clusters)
         km.fit(self.tfidf)
         
@@ -498,27 +513,25 @@ class Ui_MainWindow(object):
 
     def restart_app(self):
         
-        self.buttonGroup.setExclusive(False)
+        self.clear_supervised()
+        self.clear_unsupervised()
+        self.reset_disable()
+
         self.buttonGroup_2.setExclusive(False)
         self.buttonGroup_3.setExclusive(False)
 
     # Reset radio buttons
         self.radioButton_Supervised.setChecked(False)
         self.radioButton_Unsupervised.setChecked(False)
-        self.radioButton_Regression.setChecked(False)
-        self.radioButton_Classification.setChecked(False)  # Reset Classification button
-    # Reset checkboxes
-        self.checkBox_Linear_Regression.setChecked(False)
-        self.checkBox_KNN.setChecked(False)
-        self.checkBox_Decision_Tree.setChecked(False)
-        self.checkBox_Naive_Bayes.setChecked(False)
-        self.checkBox_k_mean.setChecked(False)
+    
 
     # Reset radio buttons in Validation group
         self.radioButton_Confusion_matrix.setChecked(False)
         self.radioButton_accuracy.setChecked(False)  # Reset Accuracy button
         self.radioButton_KMeans_Clusters.setChecked(False)
-
+    
+        self.buttonGroup_2.setExclusive(True)
+        self.buttonGroup_3.setExclusive(True)
     # Reset combo box selection
         self.dataset_combo.setCurrentIndex(0)  # Reset to "Select Data"
 
@@ -528,11 +541,72 @@ class Ui_MainWindow(object):
     # Clear the canvas if any plot is displayed
         self.figure.clear()
         self.canvas.draw()
-        self.buttonGroup.setExclusive(True)
-        self.buttonGroup_2.setExclusive(True)
-        self.buttonGroup_3.setExclusive(True)
 
+    def clear_supervised(self):
+        self.buttonGroup.setExclusive(False)
+        self.radioButton_Regression.setChecked(False)
+        self.radioButton_Classification.setChecked(False)  
+        self.buttonGroup.setExclusive(True)
+        # Reset checkboxes
+        self.checkBox_Linear_Regression.setChecked(False)
+        self.checkBox_KNN.setChecked(False)
+        self.checkBox_Decision_Tree.setChecked(False)
+        self.checkBox_Naive_Bayes.setChecked(False)
+    def clear_unsupervised(self):
+        self.checkBox_k_mean.setChecked(False)
+
+    def disable_supervised(self):
+        self.clear_supervised()
+        
+        self.buttonGroup_3.setExclusive(False)
+        self.radioButton_accuracy.setChecked(False)
+        self.radioButton_Confusion_matrix.setChecked(False)
+        self.radioButton_KMeans_Clusters.setChecked(False)
+        self.buttonGroup_3.setExclusive(True)
+        
+        self.radioButton_Regression.setDisabled(True)
+        self.radioButton_Classification.setDisabled(True)
+
+        self.checkBox_Linear_Regression.setDisabled(True)
+        self.checkBox_KNN.setDisabled(True)
+        self.checkBox_Decision_Tree.setDisabled(True)
+        self.checkBox_Naive_Bayes.setDisabled(True)
+        self.checkBox_k_mean.setDisabled(False)
+
+        self.radioButton_accuracy.setDisabled(True)
+        self.radioButton_Confusion_matrix.setDisabled(True)
+        self.radioButton_KMeans_Clusters.setDisabled(False)
+        
     
+    def disable_unsupervised(self):
+        self.clear_unsupervised()
+        self.radioButton_Regression.setDisabled(False)  
+        self.radioButton_Classification.setDisabled(False)  
+
+        self.checkBox_Linear_Regression.setDisabled(False)  
+        self.checkBox_KNN.setDisabled(False)  
+        self.checkBox_Decision_Tree.setDisabled(False)  
+        self.checkBox_Naive_Bayes.setDisabled(False)  
+        self.checkBox_k_mean.setDisabled(True)  
+
+        self.radioButton_accuracy.setDisabled(False)  
+        self.radioButton_Confusion_matrix.setDisabled(False)  
+        self.radioButton_KMeans_Clusters.setDisabled(True)  
+
+    def reset_disable(self):
+        self.clear_supervised()
+        self.radioButton_Regression.setDisabled(False)
+        self.radioButton_Classification.setDisabled(False)
+
+        self.checkBox_Linear_Regression.setDisabled(False)
+        self.checkBox_KNN.setDisabled(False)
+        self.checkBox_Decision_Tree.setDisabled(False)
+        self.checkBox_Naive_Bayes.setDisabled(False)
+        self.checkBox_k_mean.setDisabled(False)
+
+        self.radioButton_accuracy.setDisabled(False)
+        self.radioButton_Confusion_matrix.setDisabled(False)
+        self.radioButton_KMeans_Clusters.setDisabled(False)
 
 def removeSpecialCharacters(text):
     cleaned_text=re.sub('[^A-Za-z]+', ' ' ,text)
