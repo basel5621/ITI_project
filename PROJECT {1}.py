@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 from PyQt5 import QtCore, QtWidgets
 import pandas as pd
 import re
@@ -36,14 +30,10 @@ class Ui_MainWindow(object):
         MainWindow.resize(850, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.centralwidget.setStyleSheet("background-color:  #b4a7d6  ;")
-        
         self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBox.setGeometry(QtCore.QRect(30, 90, 341, 331))
         self.groupBox.setTitle("")
         self.groupBox.setObjectName("groupBox")
-        self.groupBox.setStyleSheet("background-color: #D3D3D3;")
-        
 
         self.horizontalLayoutWidget_3 = QtWidgets.QWidget(self.groupBox)
         self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(20, 50, 231, 31))
@@ -116,7 +106,6 @@ class Ui_MainWindow(object):
         self.groupBox_2 = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBox_2.setGeometry(QtCore.QRect(30, 430, 341, 101))
         self.groupBox_2.setObjectName("groupBox_2")
-        self.groupBox_2.setStyleSheet("background-color: #D3D3D3;")
 
         
         self.buttonGroup_3 = QtWidgets.QButtonGroup(MainWindow)
@@ -140,19 +129,16 @@ class Ui_MainWindow(object):
         self.Run = QtWidgets.QPushButton(self.centralwidget ,clicked = self.run_selected_dataset)
         self.Run.setGeometry(QtCore.QRect(490, 500, 81, 31))
         self.Run.setObjectName("Run")
-        self.Run.setStyleSheet("background-color: #32CD32; color: white; font-weight: bold;")
 
         self.Restart = QtWidgets.QPushButton(self.centralwidget)
         self.Restart.setGeometry(QtCore.QRect(630, 500, 81, 31))
         self.Restart.setObjectName("Restart")
-        self.Restart.setStyleSheet("background-color: #FF4500; color: white; font-weight: bold;")
         # Connect the Restart button to the restart_app method
         self.Restart.clicked.connect(self.restart_app)
 
         self.dataset_combo = QtWidgets.QComboBox(self.centralwidget)
         self.dataset_combo.setGeometry(QtCore.QRect(30, 40, 361, 31))
         self.dataset_combo.setObjectName("dataset_combo")
-        self.dataset_combo.setStyleSheet("background-color: #D3D3D3;")
         self.dataset_combo.addItem("")
         self.dataset_combo.addItem("")
         self.dataset_combo.addItem("")
@@ -395,7 +381,7 @@ class Ui_MainWindow(object):
         ax = self.canvas.figure.add_subplot(111)
 
         # Plot accuracy comparison
-        ax.bar(algorithms, scores, color=['#b4a7d6', '#FF5733', '#33FF57'])
+        ax.bar(algorithms, scores, color=['blue', 'orange', 'green'])
         ax.set_xlabel('Algorithms')
         ax.set_ylabel('Accuracy')
         ax.set_title('Accuracy Comparison between Models')
@@ -642,10 +628,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
-
-# In[ ]:
-
-
-
-
