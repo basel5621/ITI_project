@@ -173,7 +173,7 @@ class Ui_MainWindow(object):
         
         # Error message label (corrected initialization)
         self.error_label = QLabel("", self.centralwidget) 
-        self.error_label.setGeometry(QtCore.QRect(30, 540, 500, 30)) 
+        self.error_label.setGeometry(QtCore.QRect(30, 540, 700, 30)) 
         self.error_label.setStyleSheet("color: red; font-size: 18px;")
 
         self.retranslateUi(MainWindow)
@@ -227,8 +227,12 @@ class Ui_MainWindow(object):
             
             if self.radioButton_accuracy.isChecked():
                 self.plot_accuracy_comparison()
-            elif self.radioButton_Confusion_matrix.isChecked():  
-                self.show_confusion_matrix()
+            elif self.radioButton_Confusion_matrix.isChecked():
+                if self.radioButton_Classification.isChecked():  
+                    self.show_confusion_matrix()
+                else:
+                    self.error_label.setText("Confusion matrix is not available for regression. Please select a valid evaluation option.")
+
             elif self.radioButton_KMeans_Clusters.isChecked():
                 self.show_k_means_clusters()
             else:
@@ -242,10 +246,20 @@ class Ui_MainWindow(object):
             if self.radioButton_Regression.isChecked():
                 self.error_label.setText("This dataset is not compatible with regression analysis.")
             elif self.radioButton_Classification.isChecked():
+                # df=pd.read_csv('spam_ham_dataset.csv')
+                # df['text_cleaned']= df.text.apply(lambda x: x[9:])
+                # df['text_cleaned']=df['text_cleaned'].apply(removeSpecialCharacters)
+                # df['text_cleaned']=df['text_cleaned'].apply(Removestopwords)
+                # df['text_cleaned']=df['text_cleaned'].apply(Stemming)
+                # X=df['text_cleaned']
+                # y=df['label_num']
+            
+                # For faster execution, we use 'spam_ham_dataset_cleaned.csv', which was obtained after the above steps (processing the data)
                 df=pd.read_csv('spam_ham_dataset_cleaned.csv')
                 X=df['text_cleaned']
                 X=X.fillna('')
-                y=df['label_num']        
+                y=df['label_num']
+                
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
                 TF= TfidfVectorizer()
                 X_train_TFIDF= TF.fit_transform(X_train)
@@ -305,6 +319,9 @@ class Ui_MainWindow(object):
                 # Feature scaling
                 scaler = StandardScaler()
                 df[numerical_columns] = scaler.fit_transform(df[numerical_columns])
+                
+                #After checking, this data does not contain missing values, duplicates, or outliers
+                #Therefore, this data is clean and ready for modeling.
             
                 x= df.drop(['price', 'CarName'], axis=1)  # Include the engineered features and CarName
                 y = df['price']
@@ -484,6 +501,8 @@ class Ui_MainWindow(object):
 
     
     def run_knn_spam(self, X_vect, y_train, y_test,X_test):
+        #After using grid_search we find
+        #Best Parameters: {'metric': 'euclidean', 'n_neighbors': 3, 'weights': 'distance'}
         knn = KNeighborsClassifier(n_neighbors=3,metric='euclidean',weights='distance')
         knn.fit(X_vect, y_train)
         y_predknn = knn.predict(X_test)
@@ -502,6 +521,8 @@ class Ui_MainWindow(object):
         self.y_test = y_test
 
     def run_decision_tree_spam(self, X_vect, y_train, y_test,X_test):
+        #After using grid_search we find
+        #Best Parameters: {'criterion': 'gini', 'max_depth': None}
         dt = DecisionTreeClassifier(criterion= 'gini')
         dt.fit(X_vect, y_train)
         y_preddt = dt.predict(X_test)
@@ -515,9 +536,11 @@ class Ui_MainWindow(object):
         num_clusters = 5  # Adjust this based on your data
         km = KMeans(n_clusters=num_clusters)
         km.fit(self.tfidf)
-        
-        # Plot clusters
-        self.plot_KMeans_Clusters_Centroids(km)
+        if self.radioButton_KMeans_Clusters.isChecked():
+            # Plot clusters
+            self.plot_KMeans_Clusters_Centroids(km)
+        else:
+            self.error_label.setText("Please select one of validition options")
 
     def restart_app(self):
         
@@ -636,10 +659,6 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
-
-# In[ ]:
-
 
 
 
