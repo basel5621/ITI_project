@@ -255,7 +255,7 @@ class Ui_MainWindow(object):
                 # y=df['label_num']
             
                 # For faster execution, we use 'spam_ham_dataset_cleaned.csv', which was obtained after the above steps (processing the data)
-                df=pd.read_csv('spam_ham_dataset_cleaned.csv')
+                df=pd.read_csv('Dataset/spam_ham_dataset_cleaned.csv')
                 X=df['text_cleaned']
                 X=X.fillna('')
                 y=df['label_num']
@@ -296,7 +296,7 @@ class Ui_MainWindow(object):
     def if_Price_prediction_selected(self):
         if self.radioButton_Supervised.isChecked():
             if self.radioButton_Regression.isChecked():
-                df = pd.read_csv("CarPrice_Assignment.csv")
+                df = pd.read_csv("Dataset/CarPrice_Assignment.csv")
                 # Extract brand and model from CarName
                 df['brand'] = df['CarName'].apply(lambda x: x.split(' ')[0])
                 df['model'] = df['CarName'].apply(lambda x: ' '.join(x.split(' ')[1:]))
@@ -362,7 +362,7 @@ class Ui_MainWindow(object):
     def if_Document_data_selected(self):
         
         if self.radioButton_Unsupervised.isChecked():
-            df = pd.read_csv('file.txt.zip')
+            df = pd.read_csv('Dataset/file.txt.zip')
             #cleaing
             def get_label(text):
                 return int(text[0])
